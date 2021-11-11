@@ -2,7 +2,6 @@ import * as eva from '@eva-design/eva';
 
 export const myTheme = {
   ...eva,
-
   'color-primary-100': '#D9E3FE',
   'color-primary-200': '#B4C6FE',
   'color-primary-300': '#8EA7FE',

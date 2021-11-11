@@ -9,4 +9,5 @@ type ApkData = {
   lastUpdateTime: number;
   size: number;
   isSystemApp: boolean;
+  fileSha256?: string;
 };

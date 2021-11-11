@@ -12,6 +12,9 @@ const InstalledApps = {
   getSystemApps(): Promise<ApkData[]> {
     return RNInstalledApps.getSystemApps();
   },
+  getFileSha256(apkDir: string): Promise<string> {
+    return RNInstalledApps.getFileSha256(apkDir);
+  },
 };
 
 export default InstalledApps;
