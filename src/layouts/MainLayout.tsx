@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {StatusBar, StyleSheet} from 'react-native';
+import {StatusBar, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Layout, useTheme} from '@ui-kitten/components';
 import {useDarkMode} from '../hooks/mmkvHooks';
@@ -24,13 +24,13 @@ const MainLayout: FC<Props> = ({children}) => {
         styles.container,
         {paddingTop, paddingLeft, paddingRight, paddingBottom},
       ]}>
-      <Layout style={styles.innerContainer}>
+      <View style={styles.innerContainer}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={theme['background-basic-color-2']}
+          backgroundColor={theme['background-basic-color-1']}
         />
         {children}
-      </Layout>
+      </View>
     </Layout>
   );
 };

@@ -3,6 +3,7 @@ package com.virustotalgo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 
 import com.facebook.react.bridge.*
@@ -10,6 +11,7 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactMethod
+import com.virustotalgo.HashHelper.getFileHash
 
 import java.io.File
 import java.lang.Exception
@@ -59,11 +61,20 @@ class GetInstalledAppsModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
+    @ReactMethod
+    fun getFileSha256(fileUrl: String, promise: Promise) {
+        try {
+            val fileSha256 = getFileHash(Uri.fromFile(File(fileUrl)), reactContext.contentResolver)
+            promise.resolve(fileSha256)
+        } catch (ex: Exception) {
+            promise.reject(ex)
+        }
+    }
+
 
     private fun createAppsList(appsType: AppsType): WritableArray? {
         val pm: PackageManager = reactContext.packageManager
         val pList = pm.getInstalledPackages(0)
-
         val list = Arguments.createArray()
 
         for (i in pList.indices) {
@@ -101,6 +112,10 @@ class GetInstalledAppsModule(private val reactContext: ReactApplicationContext) 
                 val file = File(apkDir)
                 val size: Double = file.length().toDouble()
                 appInfo.putDouble("size", size)
+                appInfo.putBoolean(
+                    "isSystemApp",
+                    packageInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+                )
                 list.pushMap(appInfo)
             }
         }

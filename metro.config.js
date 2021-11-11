@@ -1,10 +1,20 @@
-const MetroConfig = require('@ui-kitten/metro-config');
+// const MetroConfig = require('@ui-kitten/metro-config');
 
-const evaConfig = {
-  evaPackage: '@eva-design/eva',
-};
+// const evaConfig = {
+//   evaPackage: '@eva-design/eva',
+// };
 
-module.exports = MetroConfig.create(evaConfig, {
+// module.exports = MetroConfig.create(evaConfig, {
+//   transformer: {
+//     getTransformOptions: async () => ({
+//       transform: {
+//         experimentalImportSupport: false,
+//         inlineRequires: true,
+//       },
+//     }),
+//   },
+// });
+module.exports = {
   transformer: {
     getTransformOptions: async () => ({
       transform: {
@@ -13,4 +23,4 @@ module.exports = MetroConfig.create(evaConfig, {
       },
     }),
   },
-});
+};

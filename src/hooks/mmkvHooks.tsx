@@ -6,7 +6,7 @@ type LiteralUnion<T extends U, U = string> = T | (U & {});
 
 export const useStorage = (
   key: LiteralUnion<'user' | 'password'>,
-  defaultValue?: string | boolean | null,
+  defaultValue?: any,
 ) => {
   const [value, setValue] = useMMKVStorage(key, MMKV, defaultValue);
   return [value, setValue];
@@ -22,4 +22,15 @@ export const useDarkMode = () => {
     isDarkMode,
     setIsDarkMode,
   };
+};
+
+export const useApkScanData = () => {
+  const [apkScanData, setApkScanData] = useStorage('apkScanData', {});
+
+  const updateScanData = (newList: Object) => {
+    const newData = {...apkScanData, ...newList};
+    setApkScanData(newData);
+  };
+
+  return {apkScanData, updateScanData};
 };
