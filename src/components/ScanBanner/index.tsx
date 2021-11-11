@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useState} from 'react';
-import {Dimensions, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Dimensions, View} from 'react-native';
 import {
   Layout,
   Text,
@@ -8,7 +8,7 @@ import {
   useStyleSheet,
   Avatar,
 } from '@ui-kitten/components';
-import {checkApkResult} from '../../utils/VirusTotalScanner';
+import {checkApkResult, getAnalysis} from '../../utils/VirusTotalScanner';
 import {useApkScanData} from '../../hooks/mmkvHooks';
 import Animated, {
   useAnimatedStyle,
@@ -73,24 +73,38 @@ const ScanBanner = ({appsList}: Props) => {
         totalThreats: 0,
       });
       const list: any = {};
+      let newlyUploadedApps = [];
       for (const app of appsList) {
         setScanningApp(app);
         setCurrentScanStatusText('Calculating SHA-256...');
         const sha256 = await InstalledApps.getFileSha256(app.apkDir);
         app.fileSha256 = sha256;
         setCurrentScanStatusText('Scanning File...');
-        // const fileResult = await checkApkResult(app);
-        setCurrentScanStatusText('');
-        console.log({sha256});
-        const isThreat = false;
-        setScanStatus(prevData => ({
-          ...prevData,
-          totalScanned: prevData?.totalScanned + 1,
-          totalThreats: prevData?.totalThreats + (isThreat ? 1 : 0),
-        }));
-
-        // list[app.packageName] = fileResult;
+        const fileResult = await checkApkResult(app);
+        if (!fileResult.pending) {
+          setCurrentScanStatusText('');
+          console.log({sha256});
+          const isThreat = false;
+          setScanStatus(prevData => ({
+            ...prevData,
+            totalScanned: prevData?.totalScanned + 1,
+            totalThreats: prevData?.totalThreats + (isThreat ? 1 : 0),
+          }));
+          list[app.packageName] = fileResult;
+        } else {
+          newlyUploadedApps.push(fileResult);
+        }
       }
+
+      setCurrentScanStatusText('Getting File Analysis Data...');
+      // getting newly uploaded files result
+      for (const app of newlyUploadedApps) {
+        const analysisResult = await getAnalysis(app.analysisId);
+        if (analysisResult) {
+          list[app.packageName] = analysisResult;
+        }
+      }
+      setCurrentScanStatusText('');
       setIsScanning(false);
       updateScanData(list);
     }
@@ -130,18 +144,22 @@ const ScanBanner = ({appsList}: Props) => {
         </TouchableWithoutFeedback>
       </View>
       <View style={styles.scanningDetailsContainer}>
-        <View style={styles.scanStatusItem}>
-          <Text category="s1">Total Apps : </Text>
-          <Text category="s1">{scanStatus.totalApps}</Text>
-        </View>
-        <View style={styles.scanStatusItem}>
-          <Text category="s1">Total Scanned : </Text>
-          <Text category="s1">{scanStatus.totalScanned}</Text>
-        </View>
-        <View style={styles.scanStatusItem}>
-          <Text category="s1">Total Threats : </Text>
-          <Text category="s1">{scanStatus.totalThreats}</Text>
-        </View>
+        {isScanning && (
+          <>
+            <View style={styles.scanStatusItem}>
+              <Text category="s1">Total Apps : </Text>
+              <Text category="s1">{scanStatus.totalApps}</Text>
+            </View>
+            <View style={styles.scanStatusItem}>
+              <Text category="s1">Total Scanned : </Text>
+              <Text category="s1">{scanStatus.totalScanned}</Text>
+            </View>
+            <View style={styles.scanStatusItem}>
+              <Text category="s1">Total Threats : </Text>
+              <Text category="s1">{scanStatus.totalThreats}</Text>
+            </View>
+          </>
+        )}
       </View>
     </Layout>
   );

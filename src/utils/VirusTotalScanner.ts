@@ -14,6 +14,8 @@ export const checkApkResult = async (apkFile: ApkData) => {
 
   const res = await axiosInstance.get(`/files/${apkFile.fileSha256}`);
 
+  console.log('Passing 0', {data: res.data});
+
   // No Existing report, uploading file
   if (res.status === 404) {
     const result = await uploadApkFile(apkFile);
@@ -39,37 +41,50 @@ export const uploadApkFile = async (apkFile: ApkData) => {
     name: `${apkFile.appName}.apk`,
   });
 
+  let analysisId: Object;
+
   if (apkFile.size / (1024 * 1024) > 32) {
     const {
       data: {data: uploadUrl},
     } = await axiosInstance.get('/files/upload_url');
 
+    console.log('Passing 1');
+
     const res = await axios.post(uploadUrl, formData, {
       headers: {'Content-Type': 'multipart/form-data', 'x-apikey': VT_API_KEY},
     });
+    console.log('Passing 2');
 
-    const analyse = await requestAnalysisData(res.data.data.id);
-    return analyse;
+    analysisId = await requestAnalysisData(res.data.data.id);
   } else {
     const res = await axiosInstance.post('/files', formData, {
-      headers: {'Content-Type': 'multipart/form-data'},
+      headers: {'Content-Type': 'multipart/form-data', 'x-apikey': VT_API_KEY},
     });
-    const analyse = await requestAnalysisData(res.data.data.id);
-    return analyse;
+    console.log('Passing 3');
+
+    analysisId = await requestAnalysisData(res.data.data.id);
   }
+
+  return {packageName: apkFile.packageName, pending: true, analysisId};
 };
 
 const requestAnalysisData = async (id: string) => {
   const axiosInstance = getAxiosInstance();
   const {data} = await axiosInstance.post(`/files/${id}/analyse`);
   // Getting the new Analysis data
-  const analyse = await getAnalysis(data.data.id);
-  return analyse;
+
+  console.log({data, id});
+
+  console.log('Passing 4');
+
+  return id;
 };
 
-const getAnalysis = async (id: string) => {
+export const getAnalysis = async (id: string) => {
   const axiosInstance = getAxiosInstance();
   const {data} = await axiosInstance.get(`/analyses/${id}`);
+  console.log('Passing 6');
+
   return data;
 };
 
